@@ -23,11 +23,14 @@ static std::map<int, std::vector<unsigned char>> frame_buffer;
 static std::vector<int> frame_buffer_remove;
 
 static std::map<int, std::string> id_map_name;
+static std::vector<std::string> enable_name;
 
 // load tag pic function
 void load_tag_pic();
 void draw_tag_pic(image im, std::string tag_name, int &all_tag_count, int &legal_tag_count);
 
+// load enable tag
+void load_enable_tag();
 
 // declare in image.c
 static char fusion_name_result[MAX_SORT_NUM][30];
@@ -121,7 +124,6 @@ int main()
             frame_buffer.insert(std::pair<int, std::vector<unsigned char>>(frame_stamp, frame));
         }
             
-
         /*
         
         /*if(!frame.empty())
@@ -133,66 +135,14 @@ int main()
         boxes.clear();
         iot_talk_receive(boxes);
 
-        //if(!frame.empty())
-
-        /*if(boxes.size())
+        // load enable tag for draw
+        load_enable_tag();
+        /*for(auto &it : enable_name)
         {
-            int current_frame_stamp = boxes[0].frame_stamp;
-
-            if(frame_buffer.find(current_frame_stamp) != frame_buffer.end())
-            {
-                m = cv::imdecode(frame_buffer[current_frame_stamp], 1);
-                im = mat_to_image(m);
-            }
-            else
-            {
-                continue;
-            }
-
-            frame_buffer_remove.clear();
-            for(auto &it : frame_buffer)
-            {
-                if(it.first < current_frame_stamp)
-                {
-                    frame_buffer_remove.push_back(it.first);
-                }
-            }
-
-            char frame_stamp_label_str[4096] = {0};
-            sprintf(frame_stamp_label_str, "%d - %d", current_frame_stamp, frame_buffer.size());
-            image frame_stamp_label = get_label(alphabet, frame_stamp_label_str, (im.h*.03));
-            draw_label(im, 0, 0, frame_stamp_label, rgb);
-
-            for(auto &it : frame_buffer_remove)
-            {
-                frame_buffer.erase(it);
-            }
-
-            for(int i = 0; i < boxes.size(); i++)
-            {
-                printf("%d = %d\n", boxes[i].frame_stamp, boxes[i].id);
-
-                left = boxes[i].x1;
-                top = boxes[i].y1;
-                right = boxes[i].x2;
-                bot = boxes[i].y2;
-
-                boxes[i].frame_stamp;
-
-                printf("person id : %d\nx1: %d, y1: %d\nx2: %d, y2: %d\n", boxes[i].id, left, top, right, bot);
-
-                width = im.h * .006;
-                draw_box_width(im, left, top, right, bot, width, red, green, blue);
-
-                char labelstr[4096] = {0};
-                sprintf(labelstr, "%d", boxes[i].id);
-                image label = get_label(alphabet, labelstr, (im.h*.03));
-                draw_label(im, top + width, left, label, rgb);
-            }
-
-            m = image_to_mat(im);
-            send_mjpeg(m, 8090, 200, 95);
+            std::cout<<it<<std::endl;
         }*/
+
+        //if(!frame.empty())
 
         if(boxes.size())
         {
@@ -240,32 +190,7 @@ int main()
             }
 
             // -----------------------------------------------------
-            // ---------------------draw box------------------------
-            // -----------------------------------------------------
-
-            /*width = im.h * .006;
-
-            for(int i = 0; i < boxes.size(); i++)
-            {
-                //printf("%d = %d\n", boxes[i].frame_stamp, boxes[i].id);
-
-                left = boxes[i].x1;
-                top = boxes[i].y1;
-                right = boxes[i].x2;
-                bot = boxes[i].y2;
-
-                //printf("person id : %d\nx1: %d, y1: %d\nx2: %d, y2: %d\n", boxes[i].id, left, top, right, bot);
-
-                draw_box_width(im, left, top, right, bot, width, red, green, blue);
-
-                //char labelstr[4096] = {0};
-                //sprintf(labelstr, "%d", boxes[i].id);
-                //image label = get_label(alphabet, labelstr, (im.h*.03));
-                //draw_label(im, top + width, left, label, rgb);
-            }*/
-
-            // -----------------------------------------------------
-            // ----------------draw tag picture---------------------
+            // ----------------draw box & tag picture---------------
             // -----------------------------------------------------
 
             int is_legal_tag = 0;
@@ -291,6 +216,14 @@ int main()
                 if(id_map_name.find(id) != id_map_name.end())
                 {
                     std::string name = id_map_name[id];
+
+                    // not enable name
+                    if(std::find(enable_name.begin(), enable_name.end(), name) == enable_name.end())
+                    {
+                        continue;
+                    }
+
+
                     image label = get_label(alphabet, (char *)name.c_str(), alphabet_size);
 
                     if(name != "unknown")
@@ -414,6 +347,87 @@ void draw_tag_pic(image im, std::string tag_name, int &all_tag_count, int &legal
         free_image(label);
     }
 }
+
+void load_enable_tag()
+{
+    std::ifstream in("selector/enable_tag.txt");
+
+    if(!in)
+    {
+        std::cout<<"Cannot open enable_tag.txt."<<std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    std::string str, tag_str;
+
+    enable_name.clear();
+    while (std::getline(in, str))
+    {
+        enable_name.push_back(str);
+    }
+
+    in.close();
+}
+
+// draw box sample code
+/*if(boxes.size())
+{
+    int current_frame_stamp = boxes[0].frame_stamp;
+
+    if(frame_buffer.find(current_frame_stamp) != frame_buffer.end())
+    {
+        m = cv::imdecode(frame_buffer[current_frame_stamp], 1);
+        im = mat_to_image(m);
+    }
+    else
+    {
+        continue;
+    }
+
+    frame_buffer_remove.clear();
+    for(auto &it : frame_buffer)
+    {
+        if(it.first < current_frame_stamp)
+        {
+            frame_buffer_remove.push_back(it.first);
+        }
+    }
+
+    char frame_stamp_label_str[4096] = {0};
+    sprintf(frame_stamp_label_str, "%d - %d", current_frame_stamp, frame_buffer.size());
+    image frame_stamp_label = get_label(alphabet, frame_stamp_label_str, (im.h*.03));
+    draw_label(im, 0, 0, frame_stamp_label, rgb);
+
+    for(auto &it : frame_buffer_remove)
+    {
+        frame_buffer.erase(it);
+    }
+
+    for(int i = 0; i < boxes.size(); i++)
+    {
+        printf("%d = %d\n", boxes[i].frame_stamp, boxes[i].id);
+
+        left = boxes[i].x1;
+        top = boxes[i].y1;
+        right = boxes[i].x2;
+        bot = boxes[i].y2;
+
+        boxes[i].frame_stamp;
+
+        printf("person id : %d\nx1: %d, y1: %d\nx2: %d, y2: %d\n", boxes[i].id, left, top, right, bot);
+
+        width = im.h * .006;
+        draw_box_width(im, left, top, right, bot, width, red, green, blue);
+
+        char labelstr[4096] = {0};
+        sprintf(labelstr, "%d", boxes[i].id);
+        image label = get_label(alphabet, labelstr, (im.h*.03));
+        draw_label(im, top + width, left, label, rgb);
+    }
+
+    m = image_to_mat(im);
+    send_mjpeg(m, 8090, 200, 95);
+}*/
 
 // draw tag pic sample code
 /*while(1)
