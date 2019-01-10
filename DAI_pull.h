@@ -7,6 +7,6 @@
 
 void iot_init();
 void iot_talk_receive(std::vector<person_box> &boxes);
-void iot_receive(std::vector<unsigned char> &frame, std::vector<person_box> &boxes);
+void iot_talk_receive(std::vector<person_box> &boxes, std::vector<std::string> &enable_name, std::map<int, person_location> &beacon_data);
 
 #endif

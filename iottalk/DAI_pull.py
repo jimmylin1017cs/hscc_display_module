@@ -15,7 +15,7 @@ ServerURL = 'http://140.113.199.181:9999'
 Reg_addr = None #if None, Reg_addr = MAC address
 
 DAN.profile['dm_name']='Transmit_Boxes'
-DAN.profile['df_list']=['IDF_Boxes', 'ODF_Boxes']
+DAN.profile['df_list']=['IDF_Boxes', 'ODF_Boxes', 'IDF_SELECTOR', 'IDF_Beacon', 'IDF_Beacon2']
 DAN.profile['d_name']= None # None for autoNaming
 DAN.device_registration_with_retry(ServerURL, Reg_addr)
 
@@ -28,17 +28,30 @@ def receive_frame_from_iottalk():
         data = DAN.pull('ODF_Boxes')
         if data != None:
             print("pull")
-            boxes_information = data[0]
+            print(data[0])
+            all_boxes_information = data[0].split('|')
+            all_boxes_information_size = len(all_boxes_information)
+            boxes_information = all_boxes_information[0]
+            enable_name = all_boxes_information[all_boxes_information_size - 1]
             #print(person_information)
             tmp_boxes = json.loads(boxes_information)
-            #print(tmp_boxes)
+            tmp_enable_name = json.loads(enable_name)
+            print(tmp_boxes)
+            print(tmp_enable_name)
+
+            tmp_beacon = list()
+            for i in range(1, all_boxes_information_size - 1):
+                tmp_beacon.append(json.loads(all_boxes_information[i]))
+
+            print(tmp_beacon)
+            
             #tmp_nparray = np.array(tmp_array)
             #tmp_buf = tmp_nparray.astype('uint8')
             #frame = cv2.imdecode(tmp_buf, 1)
             #cv2.imshow('Receive',frame)
             #cv2.waitKey(1)
 
-            return (tmp_boxes,)
+            return (tmp_boxes, tmp_enable_name, tmp_beacon)
 
     except Exception as e:
         print(e)

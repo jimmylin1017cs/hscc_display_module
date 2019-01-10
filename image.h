@@ -15,6 +15,12 @@ typedef struct{
     int x1, y1, x2, y2;
 } person_box;
 
+typedef struct{
+    //int frame_stamp;
+    int id;
+    double x, y;
+} person_location;
+
 // ######################### darknet.h
 
 typedef struct {

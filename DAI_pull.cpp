@@ -29,7 +29,7 @@ void iot_init()
     CHECK_PYTHON_NULL(pFunc)
 }
 
-void iot_talk_receive(std::vector<person_box> &boxes)
+void iot_talk_receive(std::vector<person_box> &boxes, std::vector<std::string> &enable_name, std::map<int, person_location> &beacon_data)
 {
     // check whether the function can be called or not
     if(PyCallable_Check(pFunc))
@@ -77,6 +77,96 @@ void iot_talk_receive(std::vector<person_box> &boxes)
                     //Py_DECREF(pBoxDict);
                 }
             }
+
+            std::cout<<"finish boxes"<<std::endl;
+
+            //
+            // ------------------------------ selector ----------------------------------------------
+            //
+
+            // get value from the pTuple pTuple[1]
+            pBoxList = PyTuple_GetItem(pTuple, 1);
+
+            //std::cout<<"get tupel[1]"<<std::endl;
+
+            // check whether the pBoxList type is list or not (json style)
+            if(PyList_Check(pBoxList))
+            {
+                // all class in the json
+                std::string name;
+
+                int pBoxListSize = PyList_Size(pBoxList);
+
+                // get all class value
+                enable_name.clear();
+
+                for(int i = 0; i < pBoxListSize; i++)
+                {
+                    //std::cout<<"name : ";
+
+                    name = PyString_AsString(PyList_GetItem(pBoxList, i));
+
+                    //std::cout<<name<<std::endl;
+
+                    enable_name.push_back(name);
+                }
+            }
+
+            std::cout<<"finish enable"<<std::endl;
+
+            //
+            // ------------------------------ end selector ----------------------------------------------
+            //
+
+            //
+            // ------------------------------ beacon ----------------------------------------------
+            // [ { id : [ x, y ] }, { id : [ x, y ] } ]
+            //
+
+            // get value from the pTuple pTuple[1]
+            pBoxList = PyTuple_GetItem(pTuple, 2);
+
+            std::cout<<"get tupel[2]"<<std::endl;
+
+            // check whether the pBoxList type is list or not (json style)
+            if(PyList_Check(pBoxList))
+            {
+                // all class in the json
+                std::string name;
+
+                int pBoxListSize = PyList_Size(pBoxList);
+                int id;
+                double x, y;
+
+                // get all class value
+                beacon_data.clear();
+
+                for(int i = 0; i < pBoxListSize; i++)
+                {
+                    pBoxDict = PyList_GetItem(pBoxList, i);
+
+                    //std::cout<<PyString_AsString(PyDict_GetItemString(pBoxDict, "name"))<<std::endl;
+
+                    id = PyInt_AsLong(PyDict_GetItemString(pBoxDict, "id"));
+                    x = PyFloat_AsDouble(PyDict_GetItemString(pBoxDict, "x"));
+                    y = PyFloat_AsDouble(PyDict_GetItemString(pBoxDict, "y"));
+
+                    person_location b = {id, x, y};
+                    beacon_data[id] = b;
+                }
+            }
+
+            for(auto &it : beacon_data)
+            {
+                //std::cout<<it.id<<" : "<<it.x<<", "<<it.y<<std::endl;
+                std::cout<<it.first<<" : "<<it.second.x<<", "<<it.second.y<<std::endl;
+            }
+
+            std::cout<<"finish beacon"<<std::endl;
+
+            //
+            // ------------------------------ end beacon ----------------------------------------------
+            //
         }
     }
     else

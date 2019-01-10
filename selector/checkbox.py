@@ -1,7 +1,10 @@
 from flask import Flask, request
 
+import DAI_push_selector
 
-video_url = 'http://140.113.86.135:8090'
+
+#video_url = 'http://140.113.86.135:8090'
+video_url = 'http://localhost:8090'
 local_url = 'http://localhost:5000'
 
 checkbox_name = 'person'
@@ -36,6 +39,11 @@ def index():
         with open('enable_tag.txt', 'w') as file:
             for name in enable_list:
                 file.write(name + '\n')
+
+        DAI_push_selector.send_boxes_to_iottalk(enable_list)
+
+    if request.method == 'GET':
+        DAI_push_selector.send_boxes_to_iottalk(enable_list)
 
 
     s = '<form method="post">'

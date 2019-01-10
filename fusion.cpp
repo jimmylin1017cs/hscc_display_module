@@ -11,6 +11,8 @@
 static double record_euclidean[PI_PATH_NUM][VI_PATH_NUM][MAX_DATA_PATH_NUM];
 static int segment[PI_PATH_NUM][VI_PATH_NUM];
 
+static std::map<int, person_location> all_beacon_data;
+
 void initial( int pi_compare[], int vi_compare[], Data pi_data[], 
              Data vi_data[], double current_ans[][VI_PATH_NUM], Fusion_result match_result[] ) {
   int i,j;
@@ -47,55 +49,24 @@ void get_next_string( int *count, char *data, char *pi_data ) {
 } // get_next_string()
 
 void get_pi_data( Data data[], int pi_compare[], int *pi_compare_size) {
-  char buffer[200];
-  FILE * pFile;
-  //int pastdata=pi_time;
-  int i,j;
-  
-  for( i = 1 ; i < PI_PATH_NUM + 1 ; i++ ) {
-    char file[200];
-    char fname[200];
-    sprintf(fname, "%d", i);
-    strcpy(file, "beacon/");	
-    strcat(fname,".txt");
-    strcat(file, fname);
-    pFile = fopen (file , "r");
-    if(!pFile){
-      //printf("%s not exist.\n",file);
+
+  for( int i = 1 ; i < PI_PATH_NUM + 1 ; i++ )
+  {
+    if(all_beacon_data.find(i) != all_beacon_data.end())
+    {
+      double x = all_beacon_data[i].x;
+      double y = all_beacon_data[i].y;
+
+      if (!( x ==  data[i-1].x && y == data[i-1].y ))
+      {
+        pi_compare[(*pi_compare_size)]=i-1;
+        (*pi_compare_size)++;
+      } // if
+
+      data[i-1].x = x;
+      data[i-1].y = y;
     }
-    else {
-     /* while(pastdata>0) {
-        fgets(buffer,sizeof(buffer), pFile);
-        pastdata--;
-      } // while*/
-      int count=0;
-    char pi_data[20];
-    fgets(buffer,sizeof(buffer), pFile);
-    get_next_string(&count, buffer, pi_data);
-    double x=atof(pi_data);
-    count++;
-    get_next_string(&count, buffer, pi_data);
-    double y=atof(pi_data);
-    /*printf("\n");
-    printf(file);
-    printf("\npi_%d_x=%f\n",i,x);
-    printf("pi_%d_y=%f\n",i,y);*/
-    if (!( x ==  data[i-1].x && y == data[i-1].y )) {
-    pi_compare[(*pi_compare_size)]=i-1;
-    (*pi_compare_size)++;
-    } // if
-    
-    data[i-1].x = x;
-    data[i-1].y = y;
-    fclose(pFile);
-  } // else
-  
-//    if(i==1)
-//      pi_1_output <<  atof(pi_data)<<" "; 
-//    if(i==2)
-//    pi_2_output <<  atof(pi_data)<<" "; 
-  
-  } // for  
+  }
 } // get_pi_data()
 
 void get_vi_data( Video_data all_vi_data[], int all_vi_data_size, Data data[], 
@@ -349,8 +320,10 @@ void convertCoordinate(CvMat  *srcPts, CvMat  *dstPts, image im){
 
 //void do_fusion(Fusion_result *match_result, int *match_result_size, image im, int num, float thresh, 
 //    box *boxes, float **probs, char **names, image **alphabet, int classes, int *sort_ids)
-void do_fusion(Fusion_result *match_result, int *match_result_size, image im, std::vector<person_box> boxes, char fusion_name_result[][30])
+void do_fusion(Fusion_result *match_result, int *match_result_size, image im, std::vector<person_box> &boxes, std::map<int, person_location> &beacon_data, char fusion_name_result[][30])
 {
+    all_beacon_data = beacon_data;
+
     Video_data all_vi_data[VI_PATH_NUM];
     int all_vi_data_size = 0;
     int i;
@@ -429,4 +402,10 @@ void do_fusion(Fusion_result *match_result, int *match_result_size, image im, st
 
 
     fusion(all_vi_data, match_result, match_result_size, all_vi_data_size, fusion_name_result);
+}
+
+
+void record_convert_log(double x, double y)
+{
+
 }

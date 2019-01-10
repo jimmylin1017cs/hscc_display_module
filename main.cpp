@@ -17,6 +17,8 @@ static image **alphabet;
 static std::vector<unsigned char> frame;
 static std::vector<person_box> boxes;
 
+static std::map<int, person_location> beacon_data;
+
 static std::map<std::string, image> tag_pics;
 
 static std::map<int, std::vector<unsigned char>> frame_buffer;
@@ -24,6 +26,8 @@ static std::vector<int> frame_buffer_remove;
 
 static std::map<int, std::string> id_map_name;
 static std::vector<std::string> enable_name;
+
+static bool begin_with_boxes = false;
 
 // load tag pic function
 void load_tag_pic();
@@ -52,7 +56,7 @@ void call_fusion(int frameCt, image im)
     //if (FUSION_ENABLE && frameCt%FPS==0 && frameCt!=0)
     if (FUSION_ENABLE && frameCt != 0)
     {
-        do_fusion(match_result, &match_result_size, im, boxes, fusion_name_result);
+        do_fusion(match_result, &match_result_size, im, boxes, beacon_data, fusion_name_result);
     }
 
     id_map_name.clear();
@@ -133,10 +137,10 @@ int main()
         }*/
 
         boxes.clear();
-        iot_talk_receive(boxes);
+        iot_talk_receive(boxes, enable_name, beacon_data);
 
         // load enable tag for draw
-        load_enable_tag();
+        //load_enable_tag();
         /*for(auto &it : enable_name)
         {
             std::cout<<it<<std::endl;
@@ -146,6 +150,8 @@ int main()
 
         if(boxes.size())
         {
+            begin_with_boxes = true;
+
             // -----------------------------------------------------
             // ---------------frame synchronize---------------------
             // -----------------------------------------------------
@@ -260,6 +266,22 @@ int main()
             m = image_to_mat(im);
             send_mjpeg(m, 8090, 200, 95);
         }
+
+        /*if(!begin_with_boxes && frame_stamp % 3 == 0 && frame_buffer.find(frame_stamp) != frame_buffer.end())
+        {
+            std::cout<<"begin_with_boxes"<<std::endl;
+
+            m = cv::imdecode(frame_buffer[frame_stamp], 1);
+            im = mat_to_image(m);
+
+            char frame_stamp_label_str[4096] = {0};
+            sprintf(frame_stamp_label_str, "%d - %d", frame_stamp, frame_buffer.size());
+            image frame_stamp_label = get_label(alphabet, frame_stamp_label_str, (im.h*.03));
+            draw_label(im, 0, 0, frame_stamp_label, rgb);
+
+            m = image_to_mat(im);
+            send_mjpeg(m, 8090, 200, 95);
+        }*/
     }
 
     return 0;

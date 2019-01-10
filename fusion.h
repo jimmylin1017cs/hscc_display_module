@@ -38,7 +38,7 @@ typedef struct  {
 }Video_data;
 
 //void do_fusion(Fusion_result *match_result, int *match_result_size, image im, int num, float thresh, box *boxes, float **probs, char **names, image **alphabet, int classes, int *sort_ids);
-void do_fusion(Fusion_result *match_result, int *match_result_size, image im, std::vector<person_box> boxes, char fusion_name_result[][30]);
+void do_fusion(Fusion_result *match_result, int *match_result_size, image im, std::vector<person_box> &boxes, std::map<int, person_location> &beacon_data, char fusion_name_result[][30]);
 
 int fusion(Video_data *all_vi_data, Fusion_result *match_result, int *match_result_size, int all_vi_data_size, char fusion_name_result[][30]);
 
