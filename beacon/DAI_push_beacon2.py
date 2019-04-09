@@ -6,11 +6,11 @@ import json
 
 #ServerURL = 'http://IP:9999' #with no secure connection
 #ServerURL = 'https://DomainName' #with SSL connection
-ServerURL = 'http://140.113.199.181:9999'
+ServerURL = 'http://140.113.86.143:9999'
 Reg_addr = None #if None, Reg_addr = MAC address
 
-DAN.profile['dm_name']='Transmit_Boxes'
-DAN.profile['df_list']=['IDF_Boxes', 'ODF_Boxes', 'IDF_SELECTOR', 'IDF_Beacon', 'IDF_Beacon2']
+DAN.profile['dm_name']='MODEL_BEACON'
+DAN.profile['df_list']=['IDF_BEACON']
 DAN.profile['d_name']= None # None for autoNaming
 DAN.device_registration_with_retry(ServerURL, Reg_addr)
 
@@ -30,7 +30,7 @@ def send_boxes_to_iottalk(boxes):
 
     try:
         # @0: json
-        DAN.push('IDF_Beacon2', boxes_information)
+        DAN.push('IDF_BEACON', boxes_information)
         #print('push')
     except Exception as e:
         print(e)

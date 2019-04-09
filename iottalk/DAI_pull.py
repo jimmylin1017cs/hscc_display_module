@@ -11,11 +11,11 @@ import time
 
 #ServerURL = 'http://IP:9999' #with no secure connection
 #ServerURL = 'https://DomainName' #with SSL connection
-ServerURL = 'http://140.113.199.181:9999'
+ServerURL = 'http://140.113.86.143:9999'
 Reg_addr = None #if None, Reg_addr = MAC address
 
-DAN.profile['dm_name']='Transmit_Boxes'
-DAN.profile['df_list']=['IDF_Boxes', 'ODF_Boxes', 'IDF_SELECTOR', 'IDF_Beacon', 'IDF_Beacon2']
+DAN.profile['dm_name']='MODEL_ALL'
+DAN.profile['df_list']=['ODF_ALL']
 DAN.profile['d_name']= None # None for autoNaming
 DAN.device_registration_with_retry(ServerURL, Reg_addr)
 
@@ -25,7 +25,7 @@ def receive_frame_from_iottalk():
 
     #print('start receive frame from iottalk')
     try:
-        data = DAN.pull('ODF_Boxes')
+        data = DAN.pull('ODF_ALL')
         if data != None:
             print("pull")
             print(data[0])
